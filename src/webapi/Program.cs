@@ -8,7 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient<IWeatherForcastService, WeatherForcastService>();
-builder.Services.AddTransient<IWorkerFactory, WorkerFactory>();
+builder.Services.AddSingleton<IWorkerFactory, WorkerFactory>();
 if (args.Any(o => o == "-worker"))
 {
     builder.Services.AddTransient<Worker>();
