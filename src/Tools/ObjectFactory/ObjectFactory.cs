@@ -9,33 +9,26 @@ namespace Seekatar.Tools;
 /// <summary>
 /// Factory for loading types from assemblies then creating them on demand
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">type of object to serve up</typeparam>
 public class ObjectFactory<T> : IObjectFactory<T> where T : class
 {
     private readonly IServiceProvider _provider;
     private readonly Dictionary<string, Type> _objectTypes;
-    private readonly Regex? _assemblyNameRegex;
 
     public ObjectFactory(IServiceProvider provider, IOptions<ObjectFactoryOptions> options)
     {
         _provider = provider;
         if (!string.IsNullOrWhiteSpace(options?.Value?.AssemblyNameMask))
         {
-            var assemblies = LoadAssemblies(options.Value.AssemblyNameMask);
-            foreach (var assembly in assemblies)
-            {
-                System.Diagnostics.Debug.WriteLine(assembly.FullName);
-            }
+            LoadAssemblies(options.Value.AssemblyNameMask);
         }
-        _objectTypes = LoadTypes();
+        _objectTypes = LoadTypes(options?.Value?.AssemblyNameRegEx);
     }
 
-    private static IList<Assembly> LoadAssemblies(string searchPattern, string folder = "")
+    private static IList<Assembly> LoadAssemblies(string searchPattern)
     {
-        if (string.IsNullOrWhiteSpace(folder))
-        {
-            folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException();
-        }
+        var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException("Couldn't get executing assembly's folder");
+        
         if (!searchPattern.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
         {
             searchPattern += ".dll";
@@ -64,11 +57,12 @@ public class ObjectFactory<T> : IObjectFactory<T> where T : class
     /// <returns>The name you want to identify the type</returns>
     protected virtual string ObjectName(Type type) => type.Name;
 
-    private Dictionary<string, Type> LoadTypes()
+    private Dictionary<string, Type> LoadTypes(string? assemblyNameRegexStr)
     {
         IEnumerable<Assembly> assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        if (_assemblyNameRegex != null)
+        if (!string.IsNullOrWhiteSpace(assemblyNameRegexStr))
         {
+            Regex _assemblyNameRegex = new (assemblyNameRegexStr);
             assemblies = assemblies.Where(o => _assemblyNameRegex.IsMatch(o.GetName().Name ?? ""));
         }
         return assemblies.SelectMany(s => s.GetTypes())

@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Seekatar.Tools;
@@ -21,6 +20,7 @@ public class ObjectFactoryTests
 
         serviceCollection.AddOptions<ObjectFactoryOptions>().Configure(options => {
             options.AssemblyNameMask = "O*";
+            options.AssemblyNameRegEx = "(O.*|Tools-Test)";
         });
 
         _provider = serviceCollection.BuildServiceProvider();
