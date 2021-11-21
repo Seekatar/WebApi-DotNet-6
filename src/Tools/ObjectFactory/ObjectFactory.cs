@@ -30,13 +30,6 @@ public class ObjectFactory<T> : IObjectFactory<T> where T : class
         _objectTypes = LoadTypes();
     }
 
-    public ObjectFactory(IServiceProvider provider, string searchPattern)
-    {
-        _provider = provider;
-        _assemblyNameRegex = new Regex(searchPattern);
-        _objectTypes = LoadTypes();
-    }
-
     private static IList<Assembly> LoadAssemblies(string searchPattern, string folder = "")
     {
         if (string.IsNullOrWhiteSpace(folder))

@@ -1,12 +1,37 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Seekatar.Tools;
 using Shouldly;
+using System;
+using System.Linq;
+using System.Threading;
 
 namespace Seekatar.Tests;
 
-public class ObjectFactoryTests
+class WorkerAttributeFactory : ObjectFactory<ITestWorker>
+{
+    public WorkerAttributeFactory(IServiceProvider provider, IOptions<ObjectFactoryOptions> options) : base(provider, options)
+    { }
+
+    protected override bool Predicate(Type type)
+    {
+        if (base.Predicate(type))
+        {
+            bool ret = type.GetCustomAttributes(typeof(WorkerAttribute), false).Any();
+            return ret;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    protected override string ObjectName(Type type) => (type.GetCustomAttributes(typeof(WorkerAttribute), false).FirstOrDefault() as WorkerAttribute)!.Name;
+}
+
+public class ObjectFactoryAttributeTest
 {
     private ServiceProvider? _provider;
     private ObjectFactory<ITestWorker>? _factory;
@@ -16,10 +41,11 @@ public class ObjectFactoryTests
     {
         IServiceCollection serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddSingleton<ObjectFactory<ITestWorker>>();
-        serviceCollection.AddSingleton<ITestWorker,TestSummer>();
+        serviceCollection.AddSingleton<ObjectFactory<ITestWorker>, WorkerAttributeFactory>();
+        serviceCollection.AddSingleton<ITestWorker, TestSummer>();
 
-        serviceCollection.AddOptions<ObjectFactoryOptions>().Configure(options => {
+        serviceCollection.AddOptions<ObjectFactoryOptions>().Configure(options =>
+        {
             options.AssemblyNameMask = "O*";
         });
 
@@ -33,7 +59,7 @@ public class ObjectFactoryTests
     [Test]
     public void TestAdd()
     {
-        var worker = _factory!.GetInstance(typeof(TestAdder).Name);
+        var worker = _factory!.GetInstance("add");
         worker.ShouldNotBeNull();
         worker.RunWorker(1, 4).ShouldBe(5);
     }
@@ -41,30 +67,15 @@ public class ObjectFactoryTests
     public void TestSubtract()
     {
         var worker = _factory!.GetInstance(typeof(TestSubtracter).Name);
-        worker.ShouldNotBeNull();
-        worker.RunWorker(10, 1).ShouldBe(9);
-    }
-    [Test]
-    public void TestSum()
-    {
-        var worker = _factory!.GetInstance(typeof(TestSummer).Name);
-        worker.ShouldNotBeNull();
-        worker.RunWorker(1, 1).ShouldBe(2);
-        worker.RunWorker(1, 1).ShouldBe(4);
+        worker.ShouldBeNull();
     }
     [Test]
     public void TestMultiplierFromNuGet()
     {
         // TestMultiplier not reference here to avoid it gettting loaded automatically
         // that way this tests the ObjectFactory.LoadAssemblies method
-        var worker = _factory!.GetInstance("TestMultiplier");
+        var worker = _factory!.GetInstance("times");
         worker.ShouldNotBeNull();
         worker.RunWorker(5, 6).ShouldBe(30);
-    }
-    [Test]
-    public void TestMissing()
-    {
-        var worker = _factory!.GetInstance("NotFound");
-        worker.ShouldBeNull();
     }
 }
