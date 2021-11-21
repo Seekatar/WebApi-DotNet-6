@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Seekatar.Tools;
@@ -21,7 +22,6 @@ class TestSummer: ITestWorker
     public int RunWorker(int a, int b) => Interlocked.Add(ref _sum, a + b);
 }
 
-
 public class ObjectFactoryTests
 {
     private ServiceProvider? _provider;
@@ -34,6 +34,10 @@ public class ObjectFactoryTests
 
         serviceCollection.AddSingleton<ObjectFactory<ITestWorker>>();
         serviceCollection.AddSingleton<ITestWorker,TestSummer>();
+
+        serviceCollection.AddOptions<ObjectFactoryOptions>().Configure(options => {
+            options.AssemblyNameMask = "O*";
+        });
 
         _provider = serviceCollection.BuildServiceProvider();
         _provider.ShouldNotBeNull();
@@ -65,8 +69,10 @@ public class ObjectFactoryTests
         worker.RunWorker(1, 1).ShouldBe(4);
     }
     [Test]
-    public void TestMultiplier()
+    public void TestMultiplierFromNuGet()
     {
+        // TestMultiplier not reference here to avoid it gettting loaded automatically
+        // that way this tests the ObjectFactory.LoadAssemblies method
         var worker = _factory!.GetInstance("TestMultiplier");
         worker.ShouldNotBeNull();
         worker.RunWorker(5, 6).ShouldBe(30);

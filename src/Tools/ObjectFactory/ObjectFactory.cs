@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Seekatar.Interfaces;
 
 namespace Seekatar.Tools;
@@ -15,34 +16,40 @@ public class ObjectFactory<T> : IObjectFactory<T> where T : class
     private readonly Dictionary<string, Type> _objectTypes;
     private readonly Regex? _assemblyNameRegex;
 
-    public ObjectFactory(IServiceProvider provider)
+    public ObjectFactory(IServiceProvider provider, IOptions<ObjectFactoryOptions> options)
     {
         _provider = provider;
+        if (!string.IsNullOrWhiteSpace(options?.Value?.AssemblyNameMask))
+        {
+            var assemblies = LoadAssemblies(options.Value.AssemblyNameMask);
+            foreach (var assembly in assemblies)
+            {
+                System.Diagnostics.Debug.WriteLine(assembly.FullName);
+            }
+        }
         _objectTypes = LoadTypes();
     }
 
-    public ObjectFactory(IServiceProvider provider, string assemblyNameRegex)
+    public ObjectFactory(IServiceProvider provider, string searchPattern)
     {
         _provider = provider;
-        _assemblyNameRegex = new Regex(assemblyNameRegex);
+        _assemblyNameRegex = new Regex(searchPattern);
         _objectTypes = LoadTypes();
     }
 
-    /// <summary>
-    /// Load assemblies in matching a pattern
-    /// </summary>
-    /// <param name="searchPattern">wildcard pattern to match</param>
-    /// <param name="folder">folder to look in, defaults to executing assembly folder</param>
-    /// <returns>enumerable the loaded assemblies</returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static IEnumerable<Assembly> LoadAssemblies(string searchPattern, string folder = "")
+    private static IList<Assembly> LoadAssemblies(string searchPattern, string folder = "")
     {
         if (string.IsNullOrWhiteSpace(folder))
         {
             folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException();
         }
+        if (!searchPattern.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+        {
+            searchPattern += ".dll";
+        }
         return Directory.EnumerateFiles(folder, searchPattern, SearchOption.TopDirectoryOnly)
-                        .Select(Assembly.LoadFrom);
+                        .Select(Assembly.LoadFrom)
+                        .ToList();
     }
 
     /// <summary>
