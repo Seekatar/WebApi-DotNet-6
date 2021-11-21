@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.DependencyInjection;
 using Seekatar.Interfaces;
 
 namespace Seekatar.Tools;
@@ -8,7 +9,7 @@ namespace Seekatar.Tools;
 /// Factory for loading types from assemblies then creating them on demand
 /// </summary>
 /// <typeparam name="T"></typeparam>
-class ObjectFactory<T> : IObjectFactory<T> where T : class
+public class ObjectFactory<T> : IObjectFactory<T> where T : class
 {
     private readonly IServiceProvider _provider;
     private readonly Dictionary<string, Type> _objectTypes;
