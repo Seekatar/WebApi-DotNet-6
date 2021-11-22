@@ -40,4 +40,4 @@ jobs:
 
     - name: Publish to GitHub NuGet
       run: |
-       dotnet nuget push "./packages/Seekatar.Tools.$Version.nupkg" --api-key ${{ secrets.NUGET_PAT }} --source "github"
+       dotnet nuget push "./packages/Seekatar.Tools.1.0.$env:GITHUB_RUN_NUMBER.nupkg" --api-key ${{ secrets.NUGET_PAT }} --source "github"
