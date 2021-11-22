@@ -1,5 +1,5 @@
 param (
-    [ValidateSet('ObjectFactoryBuild','ObjectFactoryTest','ci','CreateLocalNuget')]
+    [ValidateSet('ObjectFactoryBuild','ObjectFactoryPack','ObjectFactoryTest','ci','CreateLocalNuget')]
     [string[]] $Tasks,
     [string] $Version,
     [string] $LocalNugetFolder
@@ -82,7 +82,7 @@ foreach ($t in $myTasks) {
             }
             'ObjectFactoryPack' {
                 executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/src/Tools') {
-                    dotnet pack -o packages --include-source -p:Version=$Version -p:AssemblyVersion=$Version
+                    dotnet pack -o ../../packages --include-source -p:Version=$Version -p:AssemblyVersion=$Version
                     }
             }
             Default {}

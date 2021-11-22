@@ -37,6 +37,6 @@ jobs:
     - name: Do CI Build
       run: ./run.ps1 ci -Version "1.0.$env:GITHUB_RUN_NUMBER"
 
-    - name: Create GitHub NuGet Source
+    - name: Publish to GitHub NuGet
       run: |
        dotnet nuget push (Get-Item ./packages/*.nupkg) --api-key ${{ secrets.NUGET_PAT }} --source "github"
