@@ -1,0 +1,43 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main,build ]
+  pull_request:
+    branches: [ main ]
+  # workflow_dispatch: allows manually kicking off a build
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Dump Environment
+      run: |
+       $PSVersionTable
+       gci env: | ft -wrap
+
+    - name: Create GitHub NuGet Source
+      run: |
+       dotnet nuget add source --username $env:GITHUB_REPOSITORY_OWNER --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/$($env:GITHUB_REPOSITORY_OWNER.ToLower())/index.json"
+
+    - name: Do CI Build
+      run: |
+        ./run.ps1 ci -Version "1.0.$env:GITHUB_RUN_NUMBER"
+
+    - name: Publish to GitHub NuGet
+      run: |
+       dotnet nuget push "./packages/Seekatar.Tools.1.0.$env:GITHUB_RUN_NUMBER.nupkg" --api-key ${{ secrets.NUGET_PAT }} --source "github"

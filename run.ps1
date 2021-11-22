@@ -1,6 +1,8 @@
 param (
-    [ValidateSet('ObjectFactoryBuild','ObjectFactoryTest')]
-    [string[]] $Task
+    [ValidateSet('ObjectFactoryBuild','ObjectFactoryPack','ObjectFactoryTest','ci','CreateLocalNuget')]
+    [string[]] $Tasks,
+    [string] $Version,
+    [string] $LocalNugetFolder
 )
 
 function executeSB
@@ -29,14 +31,36 @@ param(
     }
 }
 
-foreach ($t in $Task) {
+if ($Tasks -eq "ci") {
+    $myTasks = @('CreateLocalNuget','ObjectFactoryBuild','ObjectFactoryTest','ObjectFactoryPack')
+} else {
+    $myTasks = $Tasks
+}
+
+foreach ($t in $myTasks) {
 
     try {
 
         $prevPref = $ErrorActionPreference
         $ErrorActionPreference = "Stop"
 
+        "-------------------------------"
+        "Starting $t"
+        "-------------------------------"
+
         switch ($t) {
+            'CreateLocalNuget' {
+                executeSB -WorkingDirectory $PSScriptRoot {
+                    $localNuget = dotnet nuget list source | Select-String "Local \[Enabled" -Context 0,1
+                    if (!$localNuget) {
+                        if (!$LocalNugetFolder) {
+                            $LocalNugetFolder = (Join-Path $PSScriptRoot 'packages')
+                            $null = New-Item 'packages' -ItemType Directory -ErrorAction Ignore
+                        }
+                        dotnet nuget add source $LocalNugetFolder --name Local
+                    }
+                    }
+            }
             'ObjectFactoryBuild' {
                 executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/src/Tools') {
                     dotnet build
@@ -51,14 +75,23 @@ foreach ($t in $Task) {
                     if ($localNuget) {
                         dotnet pack -o ($localNuget.Context.PostContext.Trim()) --include-source -p:Version=1.0.1 -p:AssemblyVersion=1.0.1
                     } else {
-                        throw "Must have a Local NuGet source for testing. e.g. nuget sources add -name Local -source c:\nupkgs"
+                        throw "Must have a Local NuGet source for testing. e.g. dotnet nuget sources add -name Local -source c:\nupkgs"
                     }
                     }
                 executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/tests/ObjectFactoryTests/unit') {
                     dotnet test
                     }
             }
-            Default {}
+            'ObjectFactoryPack' {
+                if ($Version) {
+                    "Packing with version $Version"
+                    executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/src/Tools') {
+                        dotnet pack -o ../../packages --include-source -p:Version=$Version -p:AssemblyVersion=$Version
+                    }
+                } else {
+                    throw "Must supply Version for pack"
+                }
+            }
         }
 
     } finally {
