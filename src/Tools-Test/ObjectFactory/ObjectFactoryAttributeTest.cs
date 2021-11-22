@@ -13,18 +13,7 @@ class WorkerAttributeFactory : ObjectFactory<ITestWorker>
     public WorkerAttributeFactory(IServiceProvider provider, IOptions<ObjectFactoryOptions> options) : base(provider, options)
     { }
 
-    protected override bool Predicate(Type type)
-    {
-        if (base.Predicate(type))
-        {
-            bool ret = type.GetCustomAttributes(typeof(WorkerAttribute), false).Any();
-            return ret;
-        }
-        else
-        {
-            return false;
-        }
-    }
+    protected override bool Predicate(Type type) => base.Predicate(type) && type.GetCustomAttributes(typeof(WorkerAttribute), false).Any();
 
     protected override string ObjectName(Type type) => (type.GetCustomAttributes(typeof(WorkerAttribute), false).FirstOrDefault() as WorkerAttribute)!.Name;
 }
@@ -44,8 +33,8 @@ public class ObjectFactoryAttributeTest
 
         serviceCollection.AddOptions<ObjectFactoryOptions>().Configure(options =>
         {
-            options.AssemblyNameMask = "O*";
-            options.AssemblyNameRegEx = "(O.*|Tools-Test)";
+            options.AssemblyNameMask = "ObjectFactory*";
+            options.AssemblyNameRegEx = "(ObjectFactory.*|Tools-Test)";
         });
 
         _provider = serviceCollection.BuildServiceProvider();

@@ -7,7 +7,7 @@ using Seekatar.Interfaces;
 namespace Seekatar.Tools;
 
 /// <summary>
-/// Factory for loading types from assemblies then creating them on demand
+/// Factory for discovering types from assemblies then creating them on demand
 /// </summary>
 /// <typeparam name="T">type of object to serve up</typeparam>
 public class ObjectFactory<T> : IObjectFactory<T> where T : class
@@ -44,7 +44,7 @@ public class ObjectFactory<T> : IObjectFactory<T> where T : class
     public IReadOnlyDictionary<string, Type> ObjectTypes => _objectTypes;
 
     /// <summary>
-    /// Criteria for the classes to load. Defaults to classes that implement T
+    /// Criteria for the classes to load. Defaults to classes that implements T
     /// </summary>
     /// <param name="type">A Type to check</param>
     /// <returns>true if this Type should be included</returns>
