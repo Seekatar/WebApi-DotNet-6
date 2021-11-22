@@ -85,13 +85,11 @@ foreach ($t in $myTasks) {
                     "Packing with version $Version"
                     executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/src/Tools') {
                         dotnet pack -o ../../packages --include-source -p:Version=$Version -p:AssemblyVersion=$Version
-                        }
                     }
                 } else {
                     throw "Must supply Version for pack"
                 }
             }
-            Default {}
         }
 
     } finally {
