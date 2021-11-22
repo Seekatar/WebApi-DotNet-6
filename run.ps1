@@ -32,7 +32,7 @@ param(
 }
 
 if ($Tasks -eq "ci") {
-    $myTasks = @('CreateLocalNuget','ObjectFactoryBuild','ObjectFactoryTest')
+    $myTasks = @('CreateLocalNuget','ObjectFactoryBuild','ObjectFactoryTest','ObjectFactoryPack')
 } else {
     $myTasks = $Tasks
 }
@@ -44,7 +44,9 @@ foreach ($t in $myTasks) {
         $prevPref = $ErrorActionPreference
         $ErrorActionPreference = "Stop"
 
+        "-------------------------------"
         "Starting $t"
+        "-------------------------------"
 
         switch ($t) {
             'CreateLocalNuget' {
