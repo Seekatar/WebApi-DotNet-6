@@ -2,9 +2,9 @@ name: .NET
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main,build ]
+  pull_request:
+    branches: [ main ]
   # workflow_dispatch: allows manually kicking off a build
   workflow_dispatch:
 
