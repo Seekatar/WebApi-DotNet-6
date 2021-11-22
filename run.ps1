@@ -49,13 +49,13 @@ foreach ($t in $myTasks) {
         switch ($t) {
             'CreateLocalNuget' {
                 executeSB -WorkingDirectory $PSScriptRoot {
-                    $localNuget = dotnet nuget list source | Select-String "Local2 \[Enabled" -Context 0,1
+                    $localNuget = dotnet nuget list source | Select-String "Local \[Enabled" -Context 0,1
                     if (!$localNuget) {
                         if (!$LocalNugetFolder) {
                             $LocalNugetFolder = (Join-Path $PSScriptRoot 'packages')
                             $null = New-Item 'packages' -ItemType Directory -ErrorAction Ignore
                         }
-                        dotnet nuget add source $LocalNugetFolder  --name Local2
+                        dotnet nuget add source $LocalNugetFolder --name Local
                     }
                     }
             }
