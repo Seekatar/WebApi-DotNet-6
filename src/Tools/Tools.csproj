@@ -6,6 +6,15 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Seekatar.$(MSBuildProjectName)</AssemblyName>
     <RootNamespace>Seekatar.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>Seekatar.Tools</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Seekatar.</Authors>
+    <Company>Seekatar</Company>
+    <RepositoryUrl>https://github.com/seekatar/WebApi-DotNet-6</RepositoryUrl>
+    <Description>
+    This library contains various .NET tools
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>

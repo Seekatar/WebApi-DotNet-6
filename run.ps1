@@ -80,6 +80,11 @@ foreach ($t in $myTasks) {
                     dotnet test
                     }
             }
+            'ObjectFactoryPack' {
+                executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/src/Tools') {
+                    dotnet pack -o packages --include-source -p:Version=$Version -p:AssemblyVersion=$Version
+                    }
+            }
             Default {}
         }
 
