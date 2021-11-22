@@ -1,7 +1,8 @@
 param (
-    [ValidateSet('ObjectFactoryBuild','ObjectFactoryTest','ci')]
+    [ValidateSet('ObjectFactoryBuild','ObjectFactoryTest','ci','CreateLocalNuget')]
     [string[]] $Tasks,
-    [string] $Version
+    [string] $Version,
+    [string] $LocalNugetFolder
 )
 
 function executeSB
@@ -43,13 +44,18 @@ foreach ($t in $myTasks) {
         $prevPref = $ErrorActionPreference
         $ErrorActionPreference = "Stop"
 
+        "Starting $t"
+
         switch ($t) {
             'CreateLocalNuget' {
                 executeSB -WorkingDirectory $PSScriptRoot {
-                    $localNuget = dotnet nuget list source | Select-String "Local \[Enabled" -Context 0,1
+                    $localNuget = dotnet nuget list source | Select-String "Local2 \[Enabled" -Context 0,1
                     if (!$localNuget) {
-                        New-Item 'packages' -ItemType Directory -ErrorAction Ignore
-                        dotnet nuget sources add -name Local -source (Join-Path $PSScriptRoot 'packages')
+                        if (!$LocalNugetFolder) {
+                            $LocalNugetFolder = (Join-Path $PSScriptRoot 'packages')
+                            $null = New-Item 'packages' -ItemType Directory -ErrorAction Ignore
+                        }
+                        dotnet nuget add source $LocalNugetFolder  --name Local2
                     }
                     }
             }
