@@ -35,7 +35,8 @@ jobs:
        dotnet nuget add source --username $env:GITHUB_REPOSITORY_OWNER --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/$($env:GITHUB_REPOSITORY_OWNER.ToLower())/index.json"
 
     - name: Do CI Build
-      run: ./run.ps1 ci -Version "1.0.$env:GITHUB_RUN_NUMBER"
+      run: |
+        ./run.ps1 ci -Version "1.0.$env:GITHUB_RUN_NUMBER"
 
     - name: Publish to GitHub NuGet
       run: |
