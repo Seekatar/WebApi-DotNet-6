@@ -1,6 +1,7 @@
 param (
-    [ValidateSet('ObjectFactoryBuild','ObjectFactoryTest')]
-    [string[]] $Task
+    [ValidateSet('ObjectFactoryBuild','ObjectFactoryTest','ci')]
+    [string[]] $Tasks,
+    [string] $Version
 )
 
 function executeSB
@@ -29,7 +30,13 @@ param(
     }
 }
 
-foreach ($t in $Task) {
+if ($Tasks -eq "ci") {
+    $myTasks = @('CreateLocalNuget','ObjectFactoryBuild','ObjectFactoryTest')
+} else {
+    $myTasks = $Tasks
+}
+
+foreach ($t in $myTasks) {
 
     try {
 
@@ -37,6 +44,15 @@ foreach ($t in $Task) {
         $ErrorActionPreference = "Stop"
 
         switch ($t) {
+            'CreateLocalNuget' {
+                executeSB -WorkingDirectory $PSScriptRoot {
+                    $localNuget = dotnet nuget list source | Select-String "Local \[Enabled" -Context 0,1
+                    if (!$localNuget) {
+                        New-Item 'packages' -ItemType Directory -ErrorAction Ignore
+                        dotnet nuget sources add -name Local -source (Join-Path $PSScriptRoot 'packages')
+                    }
+                    }
+            }
             'ObjectFactoryBuild' {
                 executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/src/Tools') {
                     dotnet build
@@ -51,7 +67,7 @@ foreach ($t in $Task) {
                     if ($localNuget) {
                         dotnet pack -o ($localNuget.Context.PostContext.Trim()) --include-source -p:Version=1.0.1 -p:AssemblyVersion=1.0.1
                     } else {
-                        throw "Must have a Local NuGet source for testing. e.g. nuget sources add -name Local -source c:\nupkgs"
+                        throw "Must have a Local NuGet source for testing. e.g. dotnet nuget sources add -name Local -source c:\nupkgs"
                     }
                     }
                 executeSB -WorkingDirectory (Join-Path $PSScriptRoot '/tests/ObjectFactoryTests/unit') {
