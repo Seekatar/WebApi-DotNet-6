@@ -1,6 +1,6 @@
 # ObjectFactory
 
-This class will create by a name of a given `Type`. Registered as a singleton, it will scan loaded assemblies for `Types`, and track ones that you specify. Then you will call `GetInstance` to have the factory return an instance of the class.
+This tool will create objects by a name of a given `Type`. Registered as a singleton, it will scan loaded assemblies for `Types`, and track ones that you specify. Then you will call `GetInstance` to have the factory return an instance of the class.
 
 This uses the .NET [IServiceProvider](https://docs.microsoft.com/en-us/dotnet/api/system.iserviceprovider?view=net-6.0) to create the instances so they support injecting whatever they need.
 
