@@ -1,13 +1,3 @@
-# Seekatar's .NET Tools
+# .NET 6 Web API Sample
 
-This repo contains various .NET tools for .NET 6
-
-[ObjectFactory](src/Tools/ObjectFactory/README.md) discovers derived `Types` and allows them to be created later.
-
-## Pulling From GitHub NuGet Repo
-
-Add a new nuget source
-
-```PowerShell
-dotnet nuget add source --username $username --password $pat --store-password-in-clear-text --name github "https://nuget.pkg.github.com/seekatar/index.json"
-```
+Repo for playing with .NET 6 and new NuGet libraries.

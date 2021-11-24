@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Temp1ate.Worker;
+using Seekatar.Interfaces;
+using Seekatar.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient<IWeatherForcastService, WeatherForcastService>();
-builder.Services.AddSingleton<IWorkerFactory, WorkerFactory>();
+builder.Services.AddSingleton<IObjectFactory<IWorker>,ObjectFactory<IWorker>>();
 
 var app = builder.Build();
 
